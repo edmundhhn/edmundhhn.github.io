@@ -110,29 +110,189 @@
 									</div>
 								</header>
 								<!-- <span class="image featured"><img src="../images/pic01.jpg" alt="" /></span> -->
-								<h2>Introduction</h2>
-								<p>
-									Whether it be by integration of data-driven applications with a third party or simply scraping a static dataset, a knowledge and understanding of API usage is a invaluable skillset for anyone who wants to work with data.
-									In this freelance project I was tasked with creating a database for a list of 50,000 senior living facilities. Given only the addresses of each facility, I had to procure data including in the following categories:
-								</p>
-								<ul>
-									<li><b> Geographical Information - TomTom API: </b> Name of Village/Town/City/County/State in which the facility is based, Geolocation (Longitude and Latitude)</li>
-									<li><b> Nearby Cities: - GeoDB API:</b> 3 of the Nearest Towns/Cities and their locations</li>
-									<li><b> Census Data - CSV files from Census.gov: </b> Population of the Town/City the facility is based, Population of the City over 65</li>
-									<li><b>Nearby Points of Interest (POI) - TomTom API:</b> For each address, finding a list of nearest points of interests as well as the distance from each one. These included 2 Nearest Hospitals, 4 Nearest Restaurants, 4 Nearest Pharmacy, Nearest Hairdresser, 2 Nearest Churches and more... </li>
-									<li><b> Weather Data - Weather Crossing API: </b> Coldest and warmest months and their corresponding temperature averages, Precipitation, Snowfall, Humidity etc...</li> 
-								</ul>
-								<p> <b>The final dataset would contain 174 columns and thus had over 8.7 million observations! </b> Procurement involved using 3 API's (listed above) as well as data from census.gov which came in the form of CSV files. Running through the entire pipeline would be boring and would be too long to be 
-									readable so instead I'd like to pinpoint some of the challenges I faced and my key takeaways, along with some fun code snippets! 
-								</p>
+								<div>
+									<h2>Introduction</h2>
+									<p>
+										Whether it be by integration of data-driven applications with a third party or simply scraping a static dataset, a knowledge and understanding of API usage is a invaluable skillset for anyone who wants to work with data.
+										In this freelance project I was tasked with creating a database for a list of 50,000 senior living facilities. Given only the addresses of each facility, I had to procure data including in the following categories:
+									</p>
+									<ul>
+										<li><b> Geographical Information - TomTom API: </b> Name of Village/Town/City/County/State in which the facility is based, Longitude/Latitude (Known as Geocoding))</li>
+										<li><b> Nearby Cities: - GeoDB API:</b> 3 of the Nearest Towns/Cities and their locations</li>
+										<li><b> Census Data - CSV files from Census.gov: </b> Population of the Town/City the facility is based, Population of the City over 65</li>
+										<li><b>Nearby Points of Interest (POI) - TomTom API:</b> For each address, finding a list of nearest points of interests as well as the distance from each one. These included 2 Nearest Hospitals, 4 Nearest Restaurants, 4 Nearest Pharmacy, Nearest Hairdresser, 2 Nearest Churches and more... </li>
+										<li><b> Weather Data - Weather Crossing API: </b> Coldest and warmest months and their corresponding temperature averages, Precipitation, Snowfall, Humidity etc...</li> 
+									</ul>
+									<p> <b>The final dataset would contain 174 columns and thus had over 8.7 million observations! </b> Procurement involved using 3 API's (listed above) as well as data from census.gov which came in the form of CSV files. Due to the length of this project I will be mainly highlighting key challenges and takeaways, with some code snippets!
+									</p>
 
-								<h2>Challenge One: Be Wary of Costs! (ft. Google Maps API)</h2>
+									<h2>Takeaway: Basic API Usage</h2>
 
-								<h2>Challege Two: API's may not have desired functionality</h2>
+									<p>
+										The basic usage of an API can be quite simple and uniform across different services. Below is the code used for geocoding (finding the longitude and latitude of a location). The basic elements of this URL request (and many others) are
+										<ul>
+											<li>Endpoint: defines which API from the service you are querying</li>
+											<li>Query: The specific search that the user wants to execute, in this case an address</li>
+											<li>Parameters: Other parameters defined by the API documentation. This will very likely include the API Key itself.</li>
+										</ul>
+										The request is then made and the returned JSON file can be subsequently parsed for required data. This is demonstrated in the function retrieve_geocode_info()
+									</p>
 
-								<h2>Challege Three: Data Accuracy and Uniformity</h2>
+									<pre>
 
-								<h2>Challenge Four: API's requests can be very slow</h2>
+										<code style="display:block; margin:auto; margin-left: 10%; margin-right: 10%; margin-top: -1em; margin-bottom: 1em;">
+def make_geocode_request(query):
+	"""
+	Create the request for the geocode and execute it to obtain geocode results in JSON format
+	"""
+
+	# Set up URL parameters
+	geocode_params = {'key':TOMTOM_API_KEY,
+			'countrySet': 'USA'
+			}
+
+	endpoint = 'https://api.tomtom.com/search/2/geocode/'
+	encoded_query = quote_plus(query)
+	response_format = 'json'
+	params = urlencode(geocode_params)
+
+	URL = f'{endpoint}{encoded_query}.{response_format}?{params}'
+
+	geocode_results = requests.get(URL).json()
+
+	return geocode_results
+
+def retrieve_geocode_info(geocode_results):
+	"""
+	Retrieve the relevant information from the geocode_results response JSON
+	"""
+	top_result = geocode_results['results'][0]
+
+	# Latitude and Longitude
+	location = top_result['position']
+	lat = location['lat']
+	lng = location['lon']
+
+	# State, county, city
+	address_details = top_result['address']
+	state = address_details['countrySubdivision']
+	county = address_details['countrySecondarySubdivision']
+	city = address_details['municipality']
+	
+	geocode_dict = {'Latitude': lat, 'Longitude':lng, 'State': state, 'County': county, 'City/Town': city}
+	
+	return geocode_dict	
+										</code>
+									</pre>
+
+									<h2>Challenge One: Estimate Your Costs! (ft. Google Maps API)</h2>
+
+									<p>
+										Google Maps may be the best mapping API out there but a simple cost analysis prior to showed that it was not at all feasible!
+										With their recent pricing structure changes GMaps' API was not in the clients budget, nor did I believe that it was the most cost effective method to achieve accurate data.  
+										
+									</p>
+									
+
+									<h2>Challege Two: API's may not always have your desired functionality</h2>
+
+									<p>
+										This is best illustrated by the major problem I ran into whilst running TomTom's Nearby Search. The API was set up in such a way that if I searched for multiple categories i.e. hospital and supermarket, it would
+										return a maximum of 100 results from BOTH categories, ordered by distance.
+
+										
+									</p>
+
+									<p>
+										The problem with this was that if the nearest hospital was 10 miles away, yet there are more than 100 supermarkets closer than 10 miles, the API would not be able to retrieve what would have been the nearest hospital.
+										This caused a lot of empty (NA values in the initial data). Especially for areas that were more population dense.
+									</p>
+
+									<p>My resolution to this problem is presented in the folllowing code block. 
+										<ol>
+
+											<li>Start with a list of all the required POI category codes.  </li>
+											<li>Write a while loop to keep making requests and store data</li>
+											<li>Once the required number of a certain category is found (eg. 4 restuarants), delete it from the list, it will not be in the next request</li>
+											<li>Repeat until we have reached the end of the query i.e. less than 100 results, or have made more than 5 requests. Return the large list of results for detailed extraction</li>
+
+
+										</ul>
+										 </p>
+
+									<pre>
+										<code>
+def get_all_results(lat, lng, id_to_categories, req_two, req_four, radius=50000, offset=0):
+"""
+Make as many requests as needed, check which ids are ticked off, append it to the results list
+"""
+
+
+# Copy the id_to_categories to avoid confusion
+id_list = list(id_to_categories.keys())
+
+# Add one more for each id that we need two entries of
+id_list_extended = []
+for id_ in id_list:
+	if id_to_categories[id_] in req_two:
+		id_list_extended.append(id_)
+	elif id_to_categories[id_] in req_four:
+		id_list_extended.extend([id_] * 3)
+		
+id_list += id_list_extended
+
+# Store all results
+all_results = []
+
+# Flag to keep running the while loop, i.e. keep extracting results
+keep_running = True
+
+# Track how many requests are being made
+num_requests = 0
+
+while keep_running:
+	
+	num_requests += 1
+	
+	# Generate the category set
+	category_set = generate_category_set(list(set(id_list)))
+	
+	# Create the request
+	URL = create_request(lat, lng, category_set)
+	
+	# Extract the results and add them to all results first
+	nearby_results = requests.get(URL)
+	nearby_results = nearby_results.json()
+	
+	all_results.extend(nearby_results['results'])
+
+	# See which ids were found, knock them off the list if so
+	found = []
+	for result in nearby_results['results']:
+		found.append(result['poi']['categorySet'][0]['id'])
+		
+	
+	found_counter = Counter(found)
+	id_list_counter = Counter(id_list)
+	
+	diff = id_list_counter - found_counter
+	id_list = list(diff.elements())
+	
+	# Two conditions to terminate the loop: 1. id_list is empty, 2. No more results to retrieve
+	
+	if (not id_list) or (nearby_results['summary']['numResults'] < 100) or (num_requests>5):
+		keep_running = False
+				
+	
+return all_results, num_requests
+										</code>
+									</pre>
+
+									<h2>Challege Three: Data Accuracy and Uniformity</h2>
+
+									<h2>Challenge Four: API's requests can be very slow</h2>
+
+								</div>
 
 
 
