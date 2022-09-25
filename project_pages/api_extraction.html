@@ -123,8 +123,11 @@
 										<li><b>Nearby Points of Interest (POI) - TomTom API:</b> For each address, finding a list of nearest points of interests as well as the distance from each one. These included 2 Nearest Hospitals, 4 Nearest Restaurants, 4 Nearest Pharmacy, Nearest Hairdresser, 2 Nearest Churches and more... </li>
 										<li><b> Weather Data - Weather Crossing API: </b> Coldest and warmest months and their corresponding temperature averages, Precipitation, Snowfall, Humidity etc...</li> 
 									</ul>
-									<p> <b>The final dataset would contain 174 columns and thus had over 8.7 million observations! </b> Procurement involved using 3 API's (listed above) as well as data from census.gov which came in the form of CSV files. Due to the length of this project I will be mainly highlighting key challenges and takeaways, with some code snippets!
+									
+									<p> 
+										<b>The final dataset would contain 174 columns and thus had over 8.7 million observations! </b> Procurement involved using 3 API's (listed above) as well as data from census.gov which came in the form of CSV files. Due to the length of this project I will be mainly highlighting key challenges and takeaways, with some code snippets!
 									</p>
+									<img src="../images/dataset_samples.png" style="display:block; margin: auto; padding-bottom: 2%;" alt="">
 
 									<h2>Takeaway: Basic API Usage</h2>
 
@@ -140,7 +143,7 @@
 
 									<pre>
 
-										<code style="display:block; margin:auto; margin-left: 10%; margin-right: 10%; margin-top: -1em; margin-bottom: 1em;">
+										<code style="overflow-x:hidden">
 def make_geocode_request(query):
 	"""
 	Create the request for the geocode and execute it to obtain geocode results in JSON format
@@ -185,12 +188,20 @@ def retrieve_geocode_info(geocode_results):
 										</code>
 									</pre>
 
-									<h2>Challenge One: Estimate Your Costs! (ft. Google Maps API)</h2>
+									<h2>Challenge One: Check and Estimate Your Costs! (ft. Google Maps API)</h2>
+
+									<img src="../images/gmaps_estimated.png" style="display:block; margin: auto; padding-bottom: 2%;" alt="" class="image">
+									<img src="../images/prices_tomtom.png" style="display:block; margin: auto; padding-bottom: 2%;" alt="" class="image">
 
 									<p>
-										Google Maps may be the best mapping API out there but a simple cost analysis prior to showed that it was not at all feasible!
-										With their recent pricing structure changes GMaps' API was not in the clients budget, nor did I believe that it was the most cost effective method to achieve accurate data.  
-										
+										Google Maps may be the best mapping API out there but simple cost analysis showed that I'd have to be high off my mind to consider using their service. 
+										I am not sure how companies can afford them but I guess they may have some mutually beneficial contract. 
+									</p>
+									<p>
+										Thankfully, alternatives are out there, out of which I selected
+										the TomTom API. Their documentation was concise, and the fact that they have clients like Volkswage, Apple and Microsoft is a testament to their reliability. Most importantly they were affordable! With the 
+										total cost of extraction estimated at less than $100 (seecomparison figures above) ... <b>WHAT A DIFFERENCE!</b>
+
 									</p>
 									
 
@@ -212,7 +223,7 @@ def retrieve_geocode_info(geocode_results):
 										<ol>
 
 											<li>Start with a list of all the required POI category codes.  </li>
-											<li>Write a while loop to keep making requests and store data</li>
+											<li>Write a while loop to keep making requests and store the data which has been extracted in all_results array</li>
 											<li>Once the required number of a certain category is found (eg. 4 restuarants), delete it from the list, it will not be in the next request</li>
 											<li>Repeat until we have reached the end of the query i.e. less than 100 results, or have made more than 5 requests. Return the large list of results for detailed extraction</li>
 
@@ -251,7 +262,7 @@ keep_running = True
 num_requests = 0
 
 while keep_running:
-	
+	# Increment the number of requests that were made
 	num_requests += 1
 	
 	# Generate the category set
@@ -271,7 +282,7 @@ while keep_running:
 	for result in nearby_results['results']:
 		found.append(result['poi']['categorySet'][0]['id'])
 		
-	
+	# Convert to counter objects so we can remove the exact number
 	found_counter = Counter(found)
 	id_list_counter = Counter(id_list)
 	
@@ -288,9 +299,36 @@ return all_results, num_requests
 										</code>
 									</pre>
 
-									<h2>Challege Three: Data Accuracy and Uniformity</h2>
+									<h2>Challege Three: A Lot of Data Cleaning!</h2>
 
-									<h2>Challenge Four: API's requests can be very slow</h2>
+									<p>
+										Building a seamless data pipeline requires a lot of data cleaning and transformation, especially when collecting data from different sources. For example, one of my tasks joining a table detailing the population percentage over 65 from
+										 <a href="http://census.gov">census.gov</a> into the main database. 
+										 <img src="../images/joining problems.png" style="display:block; margin: auto; padding-bottom: 2%;" alt="">
+										 For example, one of the many problems identified was that there were different naming conventions for individual cities. This caused an error in the left_join producing N/A values. 
+										 Although these problems can be remedied by a single line of code (see below), it is often spotting these issues that can be a real problem, which requires intuition and granular investigation.
+<pre>
+	<code>
+df['City'] = data['City'].str.replace("St.", "Saint")
+	</code>
+</pre>
+									</p>
+
+									<h2>Challenge Four: API's requests can be very slow. This is because </h2>
+
+									<p>
+										Requests can be very slow! Total extraction time for all columns took about 15 hours total. Luckily I could run these overnight and I only had to extract once. The long duration is due to the synchronous nature of the requests library which must 
+										create a new session with the client server, make a request, wait for its response and close the session before starting it all over again. 
+										 
+									</p>
+									<p>
+										A faster way would be to implement requests asynchronously through <b> asyncio and aiohttp.</b> These enable the user to make a request and "await" responses as they arrive, 
+										meanwhile, the program can send more requests allowing a  much more efficient data collection as no time is spent waiting for a response before the next request is sent. 
+									</p>
+									<img src="../images/syncvsasync.png" style="display:block; margin: auto; padding-bottom: 2%;" alt="">
+									<p>
+										I had implemented these libraries before, but it did not work in this instance possibly due to request limits. Maybe solving this issue for mainstream APIs will be the subject of a future post!
+									</p>
 
 								</div>
 
