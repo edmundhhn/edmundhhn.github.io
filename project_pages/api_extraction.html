@@ -124,10 +124,15 @@
 										<li><b> Weather Data - Weather Crossing API: </b> Coldest and warmest months and their corresponding temperature averages, Precipitation, Snowfall, Humidity etc...</li> 
 									</ul>
 									
-									<p> 
-										<b>The final dataset would contain 174 columns and thus had over 8.7 million observations! </b> Procurement involved using 3 API's (listed above) as well as data from census.gov which came in the form of CSV files. Due to the length of this project I will be mainly highlighting key challenges and takeaways, with some code snippets!
+									<p>
+										My approach to this project was to procure the data with 3 seperate API's (listed above) as well as utilize some csv files from census.gov. I used Python pandas, and particuarly the DataFrame object to clean, wrangle and store the data. The requests library was used extensively to query API's.
 									</p>
-									<img src="../images/dataset_samples.png" style="display:block; margin: auto; padding-bottom: 2%;" alt="">
+
+
+									<p> 
+										<b>The final dataset would contain 174 columns and thus had over 8.7 million observations! </b> Due to the length of this project I will be mainly highlighting key challenges and takeaways, with some code snippets! Navigate to the Github <a href="https://github.com/edmundhhn"> repo </a> to see all the files in this project.
+									</p>
+									<img src="../images/dataset_samples.png" style="display:block; margin: auto; padding-bottom: 2%; max-width: 100%;" alt="">
 
 									<h2>Takeaway: Basic API Usage</h2>
 
@@ -143,7 +148,7 @@
 
 									<pre>
 
-										<code style="overflow-x:hidden">
+										<code style="overflow-x:hidden; max-width: 100%;">
 def make_geocode_request(query):
 	"""
 	Create the request for the geocode and execute it to obtain geocode results in JSON format
@@ -190,8 +195,8 @@ def retrieve_geocode_info(geocode_results):
 
 									<h2>Challenge One: Check and Estimate Your Costs! (ft. Google Maps API)</h2>
 
-									<img src="../images/gmaps_estimated.png" style="display:block; margin: auto; padding-bottom: 2%;" alt="" class="image">
-									<img src="../images/prices_tomtom.png" style="display:block; margin: auto; padding-bottom: 2%;" alt="" class="image">
+									<img src="../images/gmaps_estimated.png" style="display:block; margin: auto; padding-bottom: 2%; max-width: 100%;" alt="" class="image">
+									<img src="../images/prices_tomtom.png" style="display:block; margin: auto; padding-bottom: 2%;max-width: 100%;" alt="" class="image">
 
 									<p>
 										Google Maps may be the best mapping API out there but simple cost analysis showed that I'd have to be high off my mind to consider using their service. 
@@ -304,7 +309,7 @@ return all_results, num_requests
 									<p>
 										Building a seamless data pipeline requires a lot of data cleaning and transformation, especially when collecting data from different sources. For example, one of my tasks joining a table detailing the population percentage over 65 from
 										 <a href="http://census.gov">census.gov</a> into the main database. 
-										 <img src="../images/joining problems.png" style="display:block; margin: auto; padding-bottom: 2%;" alt="">
+										 <img src="../images/joining problems.png" style="display:block; margin: auto; padding-bottom: 2%;max-width: 100%;" alt="">
 										 For example, one of the many problems identified was that there were different naming conventions for individual cities. This caused an error in the left_join producing N/A values. 
 										 Although these problems can be remedied by a single line of code (see below), it is often spotting these issues that can be a real problem, which requires intuition and granular investigation.
 <pre>
@@ -325,7 +330,7 @@ df['City'] = data['City'].str.replace("St.", "Saint")
 										A faster way would be to implement requests asynchronously through <b> asyncio and aiohttp.</b> These enable the user to make a request and "await" responses as they arrive, 
 										meanwhile, the program can send more requests allowing a  much more efficient data collection as no time is spent waiting for a response before the next request is sent. 
 									</p>
-									<img src="../images/syncvsasync.png" style="display:block; margin: auto; padding-bottom: 2%;" alt="">
+									<img src="../images/syncvsasync.png" style="display:block; margin: auto; padding-bottom: 2%;max-width: 100%;" alt="">
 									<p>
 										I had implemented these libraries before, but it did not work in this instance possibly due to request limits. Maybe solving this issue for mainstream APIs will be the subject of a future post!
 									</p>
