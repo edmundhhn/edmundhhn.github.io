@@ -114,37 +114,18 @@
 								<div>
 									<h2>Introduction</h2>
 									<p>
-										Whether it be by integration of data-driven applications with a third party or simply scraping a static dataset, a knowledge and understanding of API usage is a invaluable skillset for anyone who wants to work with data.
-										In this freelance project I was tasked with creating a database for a list of 50,000 senior living facilities. Given only the addresses of each facility, I had to procure data including in the following categories:
+										One of my first Kaggle competition submissions was one in the Spaceship Titanic competition. I entered as I found the dataset fun and the premise creative. I had a lot of fun playing around with it so I though I'd make a walkthrough of my EDA and modelling process
+
+										. Without further ado, the brief... 
 									</p>
-									<ul>
-										<li><b> Geographical Information - TomTom API: </b> Name of Village/Town/City/County/State in which the facility is based, Longitude/Latitude (Known as Geocoding))</li>
-										<li><b> Nearby Cities: - GeoDB API:</b> 3 of the Nearest Towns/Cities and their locations</li>
-										<li><b> Census Data - CSV files from Census.gov: </b> Population of the Town/City the facility is based, Population of the City over 65</li>
-										<li><b>Nearby Points of Interest (POI) - TomTom API:</b> For each address, finding a list of nearest points of interests as well as the distance from each one. These included 2 Nearest Hospitals, 4 Nearest Restaurants, 4 Nearest Pharmacy, Nearest Hairdresser, 2 Nearest Churches and more... </li>
-										<li><b> Weather Data - Weather Crossing API: </b> Coldest and warmest months and their corresponding temperature averages, Precipitation, Snowfall, Humidity etc...</li> 
-									</ul>
-									
+									<p><i>Welcome to the year 2912, where your data science skills are needed to solve a cosmic mystery. We've received a transmission from four lightyears away and things aren't looking good.
+
+										The Spaceship Titanic was an interstellar passenger liner launched a month ago. With almost 13,000 passengers on board, the vessel set out on its maiden voyage transporting emigrants from our solar system to three newly habitable exoplanets orbiting nearby stars.
+										
+										While rounding Alpha Centauri en route to its first destination—the torrid 55 Cancri E—the unwary Spaceship Titanic collided with a spacetime anomaly hidden within a dust cloud. Sadly, it met a similar fate as its namesake from 1000 years before. Though the ship stayed intact, almost half of the passengers were transported to an alternate dimension!</i></p>
+									<h2>Exploratory Data Analysis</h2>
 									<p>
-										My approach to this project was to procure the data with 3 seperate API's (listed above) as well as utilize some csv files from census.gov. I used Python pandas, and particuarly the DataFrame object to clean, wrangle and store the data. The requests library was used extensively to query API's.
-									</p>
-
-
-									<p> 
-										<b>The final dataset would contain 174 columns and thus had over 8.7 million observations! </b> Due to the length of this project I will be mainly highlighting key challenges and takeaways, with some code snippets! Navigate to the Github <a href="https://github.com/edmundhhn"> repo </a> to see all the files in this project.
-									</p>
-									<img src="../images/dataset_samples.png" style="display:block; margin: auto; padding-bottom: 2%; max-width: 100%;" alt="">
-
-									<h2>Takeaway: Basic API Usage</h2>
-
-									<p>
-										The basic usage of an API can be quite simple and uniform across different services. Below is the code used for geocoding (finding the longitude and latitude of a location). The basic elements of this URL request (and many others) are
-										<ul>
-											<li>Endpoint: defines which API from the service you are querying</li>
-											<li>Query: The specific search that the user wants to execute, in this case an address</li>
-											<li>Parameters: Other parameters defined by the API documentation. This will very likely include the API Key itself.</li>
-										</ul>
-										The request is then made and the returned JSON file can be subsequently parsed for required data. This is demonstrated in the function retrieve_geocode_info()
+										To begin, read in the data and inspect the data with info()
 									</p>
 
 									<pre>
